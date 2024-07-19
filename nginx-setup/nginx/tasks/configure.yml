@@ -1,0 +1,24 @@
+- name: Copy custom index.html
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+
+- name: Configure Nginx
+  template:
+    src: nginx.config.j2
+    dest: /etc/nginx/sites-available/nginx.conf
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Disable the default Nginx configuration
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Restart nginx
+
+- name: Create symbolic link for Nginx configuration
+  file:
+    src: /etc/nginx/sites-available/nginx.conf
+    dest: /etc/nginx/sites-enabled/nginx.conf
+    state: link
+  notify: Restart nginx

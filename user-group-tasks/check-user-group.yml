@@ -1,0 +1,63 @@
+- name: Manage user and groups
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+  vars:
+    username: testuser
+    cust_groups:
+    - testuser
+    - test
+
+  tasks:
+  - name: Check if user exists
+    command: id -u {{ username }}
+    register: user_check
+    ignore_errors: true
+
+  - name: If user present
+    debug:
+      msg: "{{ username }} is present"
+    when: user_check.rc == 0
+
+  - name: If user is not Present
+    debug:
+      msg: "{{ username }} is not present"
+    when: user_check.rc != 0
+
+  - name: Create user if not exists
+    user:
+      name: "{{ username }}"
+      state: present
+    when: user_check.rc != 0
+
+  - name: Check if groups exist
+    command: getent group {{ item }}
+    register: group_check
+    ignore_errors: true
+    loop: "{{ cust_groups }}"
+
+  - name: If groups are not present
+    debug:
+      msg: "{{ item }} is not present"
+    when: item.rc != 0
+    loop: "{{ group_check.results }}"
+    loop_control:
+      loop_var: item
+
+  - name: If groups are present
+    debug:
+      msg: "{{ item.item }} is present"
+    when: item.rc == 0
+    loop: "{{ group_check.results }}"
+    loop_control:
+      loop_var: item
+
+  - name: Create groups if not exists
+    group:
+      name: "{{ item.item }}"
+      state: present
+    when: item.rc != 0
+    loop: "{{ group_check.results }}"
+    loop_control:
+      loop_var: item

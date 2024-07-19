@@ -1,0 +1,37 @@
+- name: Manage Databases
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+  - name: Remove MySQL packages and dependencies
+    apt:
+      name: "{{ item }}"
+      state: absent
+      update_cache: yes
+    loop:
+      - mysql-server
+      - mysql-client
+      - python3-mysqldb
+      - libmysqlclient-dev
+    become: yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Autoremove unused dependencies
+    apt:
+      autoremove: yes
+    become: yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Clean up package cache
+    apt:
+      autoclean: yes
+    become: yes
+    when: ansible_os_family == 'Debian'
+    notify: Reload systemd
+
+  - name: Reload systemd
+    command: systemctl daemon-reload

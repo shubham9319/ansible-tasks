@@ -1,0 +1,19 @@
+- name: Create group on ubuntu system
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Create group
+    group:
+      name: test
+      state: present
+
+  - name: Add the user 'testuser' & appending the group 'test' to the user's groups
+    user:
+      name: testuser
+      create_home: yes
+      groups: test
+      append: yes
+      password: "{{ user_password | password_hash('sha512') }}"

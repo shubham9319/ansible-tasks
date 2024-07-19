@@ -1,0 +1,82 @@
+- name: Manage Databases
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+  - name: Installing Mysql and dependencies
+    package:
+      name: "{{item}}"
+      state: present
+      update_cache: yes
+    loop:
+    - mysql-server
+    - mysql-client
+    - python3-mysqldb
+    - libmysqlclient-dev
+    become: yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Ensure MySQL service is running
+    service:
+      name: mysql
+      state: started
+      enabled: yes
+    when: ansible_os_family == 'Debian'
+
+  - name: Create new databases with names 'foo' and 'bar'
+    mysql_db:
+      name:
+        - foo
+        - bar
+      state: present
+
+  - name: Dump multiple databases
+    mysql_db:
+      state: dump
+      name:
+        - foo
+        - bar
+      target: /tmp/dump.sql
+
+  - name: Delete database with name 'bar'
+    mysql_db:
+      name: bar
+      state: absent
+
+  - name: Copy dump.sql to ansible machine
+    fetch:
+      src: /tmp/dump.sql
+      dest: /tmp/dump.sql
+      flat: yes
+
+  - name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
+    mysql_user:
+      name: baruser
+      password: baruser
+      priv: '*.*:ALL,GRANT'
+      state: present
+
+  - name: Revoke all privileges for user 'baruser' and password 'baruser'
+    mysql_user:
+      name: baruser
+      password: baruser
+      priv: "*.*:USAGE"
+      state: present
+
+  - name: Remove user from mysql
+    mysql_user:
+      name: baruser
+      password: baruser
+      priv: "*.*:USAGE"
+      state: absent
+
+  - name: Create database user with encrypted vault password
+    mysql_user:
+      name: test
+      password: "{{ user_password }}"
+      priv: '*.*:ALL,GRANT'
+      state: present

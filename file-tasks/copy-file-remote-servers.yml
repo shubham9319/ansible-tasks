@@ -1,0 +1,26 @@
+---
+- name: Copy file from worker1 to Ansible Host
+  hosts: worker1
+  become: yes
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Fetch file from Host1
+    fetch:
+      src: /tmp/index.html
+      dest: /tmp/index.html
+      flat: yes
+
+- name: Copy file from Ansible Host to worker2
+  hosts: worker2
+  become: yes
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Copy file to Host2
+    copy:
+      src: /tmp/index.html
+      dest: /tmp/index.html
+      mode: '0644'

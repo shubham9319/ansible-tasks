@@ -1,0 +1,26 @@
+- name: Remove user & group from ubuntu
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Remove user testuser
+    user:
+      name: testuser
+      state: absent
+      remove: yes
+      force: yes
+
+  - name: Remove groups
+    group:
+      name: "{{ item }}"
+      state: absent
+    loop:
+      - test
+      - testuser
+
+  - name: Remove home directory of testuser
+    file:
+      path: /home/testuser # Adjust this path as per your setup
+      state: absent

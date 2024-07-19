@@ -1,0 +1,57 @@
+- name: Manage Firewall
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Ensure UFW is enabled
+    ufw:
+      state: enabled
+      policy: allow
+
+  - name: Allow HTTP through UFW
+    ufw:
+      rule: allow
+      port: 80
+      proto: tcp
+
+  - name: Allow HTTPS through UFW
+    ufw:
+      rule: allow
+      port: 443
+      proto: tcp
+
+  - name: Check if HTTP port 80 is open
+    command: ufw status
+    register: ufw_status
+    changed_when: false
+  - debug:
+      msg: "HTTP port 80 is open"
+    when: "'80/tcp' in ufw_status.stdout"
+
+  - name: Check if HTTPS port 443 is open
+    command: ufw status
+    register: ufw_status
+    changed_when: false
+  - debug:
+      msg: "HTTPS port 443 is open"
+    when: "'443/tcp' in ufw_status.stdout"
+
+  - name: Add a DNS server entry to /etc/hosts
+    lineinfile:
+      path: /etc/hosts
+      regexp: '^127\.0\.0\.1'
+      line: 127.0.0.1 localhost
+      owner: root
+      group: root
+      mode: '0644'
+      backup: yes
+
+  - name: Ensure the DNS entry exists in /etc/hosts
+    lineinfile:
+      path: /etc/hosts
+      state: present
+      regexp: '^127\.0\.0\.1'
+      line: 127.0.0.1 localhost
+      backup: yes

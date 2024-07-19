@@ -1,0 +1,7 @@
+# handlers file for mysql
+- name: Start MySQL
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+  when: ansible_os_family == 'Debian'

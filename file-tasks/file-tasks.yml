@@ -1,0 +1,45 @@
+- name: Copy files
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Copy file to html directory from ansible machine to worker1 host
+    copy:
+      src: files/index.html
+      dest: /var/www/html/index.html
+
+  - name: Copy file from ansible machine to worker1 host in a tmp directory
+    copy:
+      src: /tmp/test.txt
+      dest: /tmp/test.txt
+
+  - name: Copy the file from the tmp directory on a remote server to the DevOps tmp directory on the same server
+    copy:
+      src: /tmp/test.txt
+      dest: /tmp/test.txt
+      remote_src: yes
+
+  - name: Copy directory from ansible machine to worker1 host
+    copy:
+      src: files
+      dest: /var/www/html/
+
+  - name: Copy directory from the html directory on a remote server to the tmp directory on the same server
+    copy:
+      src: /var/www/html/files
+      dest: /tmp/
+      remote_src: yes
+
+  - name: Fetch file from worker1 to ansible machine
+    fetch:
+      src: /tmp/test.txt
+      dest: /tmp/test.txt
+      flat: yes
+
+  - name: Copy file /tmp/test.txt to worker2 host
+    copy:
+      src: /tmp/test.txt
+      dest: /tmp/test.txt
+    delegate_to: worker2

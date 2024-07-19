@@ -1,0 +1,28 @@
+- name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
+  mysql_user:
+    name: firstuser
+    password: firstuser
+    priv: '*.*:ALL,GRANT'
+    state: present
+
+- name: Revoke all privileges for user 'baruser' and password 'baruser'
+  mysql_user:
+    name: baruser
+    password: baruser
+    priv: "*.*:USAGE"
+    state: present
+
+- name: Remove users from mysql
+  mysql_user:
+    name: "{{ item }}"
+    state: absent
+  loop:
+  - firstuser
+  - newuser
+
+- name: Create database user with encrypted vault password
+  mysql_user:
+    name: seconduser
+    password: "{{ user_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present

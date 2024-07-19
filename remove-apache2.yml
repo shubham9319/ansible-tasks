@@ -1,0 +1,17 @@
+- name: Remove Apache
+  hosts: worker1
+  become: yes
+  vars_files:
+  - vars/sudo_password.yml
+
+  tasks:
+  - name: Remove Apache from Debian server
+    apt:
+      name: apache2
+      state: absent
+    when: ansible_os_family == "Debian"
+
+  - name: Remove index.html from /var/www/html
+    file:
+      path: /var/www/html/index.html
+      state: absent

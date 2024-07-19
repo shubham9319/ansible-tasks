@@ -1,0 +1,9 @@
+- name: Install and configure Nginx
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+  - role: nginx

@@ -1,0 +1,24 @@
+- name: Create new database
+  mysql_db:
+    name:
+    - first
+    - second
+    state: present
+
+- name: Dump multiple databases
+  mysql_db:
+    state: dump
+    name:
+    - first
+    - second
+    target: /tmp/first.sql
+
+- name: Delete database
+  mysql_db:
+    name: myappdb
+    state: absent
+
+- name: Copy dump.sql to ansible machine
+  fetch:
+    src: /tmp/first.sql
+    dest: /tmp/first.sql

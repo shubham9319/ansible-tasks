@@ -1,0 +1,19 @@
+- name: Remove Nginx and its configuration files
+  hosts: worker1
+  become: true
+  vars_files:
+  - ../vars/sudo_password.yml
+  
+  tasks:
+  - name: Remove Nginx package
+    apt:
+      name: nginx
+      state: absent
+
+  - name: Remove Nginx configuration files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+    - /etc/nginx/
+    - /var/www/html/index.html

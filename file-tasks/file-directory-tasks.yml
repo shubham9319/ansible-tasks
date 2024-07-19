@@ -1,0 +1,96 @@
+- name: File and directory tasks
+  hosts: worker1
+  become: yes
+  vars_files:
+  - ../vars/sudo_password.yml
+
+  tasks:
+  - name: Create directory testuser
+    file:
+      path: /tmp/testuser
+      state: directory
+      owner: devops
+      group: devops
+      mode: '755'
+
+  - name: Check if directory exists
+    stat:
+      path: /tmp/testuser
+    register: check_directory
+
+  - name: Print message if directory is present
+    debug:
+      msg: "Directory '/tmp/testuser' is present."
+    when: check_directory.stat.exists
+
+  - name: Print message if directory is not present
+    debug:
+      msg: "Directory '/tmp/testuser' is not present."
+    when: not check_directory.stat.exists
+
+  - name: Create file test.txt with owner and group devops
+    file:
+      path: /tmp/testuser/test.txt
+      state: touch
+      owner: devops
+      group: devops
+      mode: '755'
+
+  - name: Copy file index.html from ansible host to worker1 host
+    copy:
+      src: files/index.html
+      dest: /tmp/testuser
+      owner: devops
+      group: devops
+      mode: '755'
+
+  - name: Check if file exists
+    stat:
+      path: /tmp/testuser/index.html
+    register: check_file
+
+  - name: Print message if file is present
+    debug:
+      msg: "File 'index.html' is present."
+    when: check_file.stat.exists
+
+  - name: Print message if file is not present
+    debug:
+      msg: "File 'index.html' is not present."
+    when: not check_file.stat.exists
+
+  - name: Check if file is copied with correct permissions
+    stat:
+      path: /tmp/testuser/index.html
+    register: file_content
+
+  - name: Debug copied file information
+    debug:
+      msg: "File permissions are {{ file_content.stat.mode }}"
+
+  - name: Copy Configurations
+    template:
+      src: templates/nginx.conf.j2
+      dest: /tmp/testuser/nginx.conf
+      owner: devops
+      group: devops
+      mode: '755'
+
+  - name: Verify template file content
+    shell: cat /tmp/testuser/nginx.conf # Replace with your actual command to verify content
+    register: template_file_content
+
+  - name: Debug template file content
+    debug:
+      msg: "Template file content: {{ template_file_content.stdout }}"
+
+  - name: Copy file from remote to local machine
+    fetch:
+      src: /tmp/testuser/shubham.txt
+      dest: /tmp-dev/shubham.txt
+      flat: yes
+
+  - name: Remove directory testuser
+    file:
+      path: /tmp/testuser
+      state: absent
