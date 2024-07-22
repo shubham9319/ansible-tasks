@@ -1,0 +1,10 @@
+---
+- name: Print Hello with Username
+  hosts: localhost
+  vars:
+    username: "Shubham"  # Default value if the variable is not passed
+  tasks:
+    - name: Print Hello with username
+      debug:
+        msg: "Hello, {{ username }}!"
+
